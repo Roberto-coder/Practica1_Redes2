@@ -1,4 +1,6 @@
-public class Producto {
+import java.io.Serializable;
+
+public class Producto implements Serializable {
 
     String nombre;
     int stock;
@@ -33,4 +35,14 @@ public class Producto {
     public void setPrecio(double precio) {
         this.precio = precio;
     }
+
+    public void imprimirDatos(){
+        System.out.println("-------------------------------------------------------------------");
+        System.out.println("Nombre: " + getNombre());
+        System.out.println("Stock: " + getStock());
+        System.out.println("Precio: $" + getPrecio());
+        System.out.println("-------------------------------------------------------------------");
+
+    }
+
 }

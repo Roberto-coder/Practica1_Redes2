@@ -5,7 +5,7 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class ServerCarrito {
-    ArrayList<Producto> productos= new ArrayList<>();
+    static ArrayList<Producto> productos= new ArrayList<>();
     public static void main(String[] args) {//Metodo main
 
         crearCatalogo();
@@ -21,14 +21,14 @@ public class ServerCarrito {
                 Socket cl = s.accept();
                 System.out.print("Conexión establecida desde "+cl.getInetAddress()+":"+cl.getPort());
 
-
-
-
+                enviarArchivo(cl,"src/Servidor/catalogo.txt");
 
                 //Cierra el socket
                 //cl.close();
 
             }
+
+
         } catch (Exception e) {
             e.printStackTrace();//cachamos la posible excepcion
         }
@@ -40,44 +40,63 @@ public class ServerCarrito {
         productos.add(new Producto("Ark",4,7));
         productos.add(new Producto("Fallout",8,6));
 
-
-    }
-
-    //Funcion para recibir el archivo
-    public static String recibirArchivo(Socket cl) {
-        String nombre="";//Nombre del archivo
         try {
-            //Definimos flujo de entrada orientado a bits ligado al socket
-            DataInputStream dis=new DataInputStream(cl.getInputStream());
+            // Serializando el ArrayList
+            FileOutputStream fileOut = new FileOutputStream("src/Servidor/catalogo.txt");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(productos);
+            out.close();
+            fileOut.close();
+            System.out.println("Datos serializados guardados en catalogo.txt");
 
-            //Definimos flujo de entrada orientado a bits ligado al socket
-            //Leemos los datos del archivo recibido en bloques de 1024
-            byte[] b = new byte[1024];
-            nombre = dis.readUTF();
-            System.out.print("\nRecibimos el archivo: "+nombre);
-            long tam = dis.readLong();
+            // Deserializando el ArrayList
+            FileInputStream fileIn = new FileInputStream("src/Servidor/catalogo.txt");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            ArrayList<String> listDeserialized = (ArrayList<String>) in.readObject();
+            in.close();
+            fileIn.close();
 
-            //Creamos flujo para escribir el archivo de salida
-            BufferedOutputStream dos=new BufferedOutputStream(new FileOutputStream(nombre));
-            //Preparamos los datos para recibir los
-            long recibidos=0;
-            int n,porcentaje;
-            //Definimos un ciclo donde estaremos recibiendo
-            while(recibidos<tam){
-                n = dis.read(b, 0, Math.min(b.length, (int)(tam - recibidos)));
-                if (n == -1) break; // Si llegamos al final del archivo
-                dos.write(b, 0, n);
-                dos.flush();
-                recibidos += n;
-                porcentaje = (int) ((recibidos * 100) / tam);
-                System.out.println("\nProgreso del archivo: " + porcentaje + "%");
-            }//While
-            //Cerramos los flujos de entrada y salida, asi como el socket
-            dos.close();
-            dis.close();
-        }catch (Exception e){
-            System.out.println("Error: "+ e);
+            System.out.println("ArrayList deserializado: " + listDeserialized);
+        } catch (Exception i) {
+            System.out.println(i);
         }
-        return nombre;
+
+
     }
+
+    //Funcion para enviar el archivo
+    public static void enviarArchivo(Socket cl, String filename) {
+        File file = new File(filename);
+        long tam=file.length();
+
+        try {//Establecemos conexion con el servidor
+            //Flujos de entrada y salida
+            DataOutputStream dos = new DataOutputStream(cl.getOutputStream());
+            DataInputStream dis = new DataInputStream(new FileInputStream(file));
+            //Enviamos el nombre y tamaño del archivo
+            dos.writeUTF(filename);
+            dos.flush();
+            dos.writeLong(tam);
+            dos.flush();
+            //Enviamos los datos obtenidos del archivo el bloques de 1024 bits
+            byte[] b = new byte[1024];
+            long enviados = 0;
+            int porcentaje, n;
+            while(enviados<tam){
+                n = dis.read(b);
+                dos.write(b,0,n);
+                dos.flush();
+                enviados=enviados+n;
+                porcentaje=(int)(enviados*100/tam);
+                System.out.print("Enviado:"+porcentaje+"%\r");
+            }//While
+            System.out.print("\n\nArchivo enviado al servidor");
+            dos.close();//Cerramos flujo de salida
+            dis.close();//Cerramos flujo de entrada
+
+        } catch (Exception e) {
+            System.out.println("Error al conectar con el servidor o al enviar el archivo: " + e.getMessage());
+        }
+    }
+
 }
