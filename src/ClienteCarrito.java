@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ClienteCarrito {
+    static ArrayList<Producto> catalogo;
+    static Carrito carrito = new Carrito();
     public static void main(String[] args) {
         try{
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -27,25 +29,25 @@ public class ClienteCarrito {
     public static void menu() {
         Scanner scanner = new Scanner(System.in);
         int opcion;
-
+        mostrarProductos();
         do {
             System.out.println("\nSelecciona la opcion que deseas realizar:");
             System.out.println("1.- Mostrar productos");
-            System.out.println("2.- Agregar un producto");
+            System.out.println("2.- Agregar un producto al carrito");
             System.out.println("3.- Eliminar un producto");
             System.out.println("4.- Editar un producto");
             System.out.println("5.- Comprar producto");
-            System.out.println("6.- Salir");
+            System.out.println("6.- Mostrar mi carrito");
+            System.out.println("10.- Salir");
 
             System.out.print("Ingresa tu opción: ");
             opcion = scanner.nextInt();
-
             switch (opcion) {
                 case 1:
                     mostrarProductos();
                     break;
                 case 2:
-                    agregarProducto();
+                    agregarProductoCarrito();
                     break;
                 case 3:
                     eliminarProducto();
@@ -57,14 +59,32 @@ public class ClienteCarrito {
                     comprarProducto();
                     break;
                 case 6:
+                    carrito.mostrarCarrito();
+                    break;    
+                case 10:
                     System.out.println("Saliendo del programa...");
+                    scanner.close();
                     break;
                 default:
                     System.out.println("Opción no válida. Por favor ingresa una opción entre 1 y 6.");
             }
-        } while (opcion != 6);
+            
+        } while (opcion != 10);
+    }
 
-        scanner.close();
+
+    private static void agregarProductoCarrito() {
+        Scanner s = new Scanner(System.in);
+        System.out.println("Ingrese el nombre del producto a agregar");
+        String nProducto = s.nextLine();
+        Producto producto = buscarProducto(nProducto);
+        if (producto == null) {
+            System.out.println("Producto no encontrado");
+        }else{
+            carrito.agregarProducto(producto);
+            System.out.println(producto);
+            System.out.println("Producto agregado correctamente");
+        }
     }
 
     public static void mostrarProductos() {
@@ -73,7 +93,7 @@ public class ClienteCarrito {
             //Deserializar
             FileInputStream fileIn = new FileInputStream("src/Cliente/catalogo.txt");
             ObjectInputStream in = new ObjectInputStream(fileIn);
-            ArrayList<Producto> catalogo = (ArrayList<Producto>) in.readObject();
+            catalogo = (ArrayList<Producto>) in.readObject();
             in.close();
             fileIn.close();
 
@@ -87,13 +107,37 @@ public class ClienteCarrito {
     }
 
     public static void agregarProducto() {
+        Scanner ap = new Scanner(System.in);
         System.out.println("Agregando producto...");
-        // Código para agregar un producto
+        System.out.println("Ingrese el nombre del producto");
+        String pNombre = ap.nextLine();
+        System.out.println("Ingrese el stock del producto");
+        int pStock = ap.nextInt();
+        System.out.println("Ingrese el precio del producto");
+        int pPrecio = ap.nextInt();
+        Producto nProducto = new Producto(pNombre, pStock, pPrecio);
+        catalogo.add(nProducto);
+        actualizarCatalogo();
+        System.out.println("Producto agregado correctamente");
+        mostrarProductos();
+    }
+
+    private static void actualizarCatalogo() {
+        try{
+        // Serializando el ArrayList
+        FileOutputStream fileOut = new FileOutputStream("src/Cliente/catalogo.txt");
+        ObjectOutputStream out = new ObjectOutputStream(fileOut);
+        out.writeObject(catalogo);
+        out.close();
+        fileOut.close();
+        System.out.println("Catalogo actualizado catalogo.txt");
+        } catch (Exception i) {
+            System.out.println(i);
+        }
     }
 
     public static void eliminarProducto() {
-        System.out.println("Eliminando producto...");
-        // Código para eliminar un producto
+        System.out.println("Ingrese el nombre");
     }
 
     public static void editarProducto() {
@@ -141,6 +185,16 @@ public class ClienteCarrito {
             System.out.println("Error: "+ e);
         }
         return nombre;
+    }
+    public static Producto buscarProducto(String nProducto){
+        Producto pBuscado = null;
+        for (Producto producto : catalogo) {
+            if (producto.getNombre().equals(nProducto)) {
+                pBuscado = producto;
+                break;
+            }
+        }
+        return pBuscado;
     }
 }
 
