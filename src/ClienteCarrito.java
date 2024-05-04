@@ -77,11 +77,13 @@ public class ClienteCarrito {
         Scanner s = new Scanner(System.in);
         System.out.println("Ingrese el nombre del producto a agregar");
         String nProducto = s.nextLine();
+        System.out.println("Ingrese la cantidad de unidades del producto a agregar");
+        int cProducto = s.nextInt();
         Producto producto = buscarProducto(nProducto);
         if (producto == null) {
             System.out.println("Producto no encontrado");
         }else{
-            carrito.agregarProducto(producto);
+            carrito.agregarProducto(producto, cProducto);
             System.out.println(producto);
             System.out.println("Producto agregado correctamente");
         }
