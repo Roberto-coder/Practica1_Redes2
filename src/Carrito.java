@@ -25,4 +25,23 @@ public class Carrito {
         }
         
     }
+
+    public void limpiarCarrito(){
+        detalleCarritos.clear();
+    }
+
+    public void borrarProducto(String nombre){
+        boolean verificador=false;
+        for (int i = 0; i < detalleCarritos.size(); i++) {
+            if (nombre.equals(detalleCarritos.get(i).getProducto().getNombre())){
+                detalleCarritos.remove(i);
+                verificador=true;
+            }
+        }
+        if (verificador){
+            System.out.println("Producto:"+nombre+" eliminado correctamente");
+        }else {
+            System.out.println("Producto no encontrado");
+        }
+    }
 }

@@ -45,4 +45,8 @@ public class Producto implements Serializable {
 
     }
 
+    public void actualizarStock(int cantidad){
+        setStock(this.stock-cantidad);
+    }
+
 }

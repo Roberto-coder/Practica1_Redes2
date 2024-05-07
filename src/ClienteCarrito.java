@@ -111,22 +111,6 @@ public class ClienteCarrito {
         }
     }
 
-    public static void agregarProducto() {
-        Scanner ap = new Scanner(System.in);
-        System.out.println("Agregando producto...");
-        System.out.println("Ingrese el nombre del producto");
-        String pNombre = ap.nextLine();
-        System.out.println("Ingrese el stock del producto");
-        int pStock = ap.nextInt();
-        System.out.println("Ingrese el precio del producto");
-        int pPrecio = ap.nextInt();
-        Producto nProducto = new Producto(pNombre, pStock, pPrecio);
-        catalogo.add(nProducto);
-        actualizarCatalogo();
-        System.out.println("Producto agregado correctamente");
-        mostrarProductos();
-    }
-
     private static void actualizarCatalogo() {
         try{
         // Serializando el ArrayList
@@ -142,7 +126,13 @@ public class ClienteCarrito {
     }
 
     public static void eliminarProducto() {
-        System.out.println("Ingrese el nombre");
+        Scanner s = new Scanner(System.in);
+        System.out.println("Ingrese el nombre del producto a eliminar");
+        String nProducto = s.nextLine();
+
+        carrito.borrarProducto(nProducto);
+
+
     }
 
     public static void editarProducto() {
@@ -151,8 +141,23 @@ public class ClienteCarrito {
     }
 
     public static void comprarProducto() {
-        System.out.println("Comprando producto...");
-        // Código para comprar un producto
+        /*for (DetalleCarrito objetos:carrito.detalleCarritos) {
+            if(catalogo.contains(objetos.getProducto())){
+                System.out.println(objetos.getProducto().nombre);
+                catalogo
+            }
+        }*/
+        for (int i = 0; i < catalogo.size(); i++) {
+            for (int j = 0; j < carrito.detalleCarritos.size(); j++) {
+                if(catalogo.get(i).equals(carrito.detalleCarritos.get(j).getProducto())){
+                    System.out.println(catalogo.get(i).getNombre());
+                    catalogo.get(i).actualizarStock(carrito.detalleCarritos.get(j).getCantidad());
+                }
+            }
+        }
+        actualizarCatalogo();
+        carrito.limpiarCarrito();
+
     }
 
     public static String recibirArchivo(Socket cl) {
@@ -247,6 +252,40 @@ public class ClienteCarrito {
             }
         }
         return pBuscado;
+    }
+
+    public static void enviarArchivo(Socket cl, String filename) {
+        File file = new File(filename);
+        long tam=file.length();
+
+        try {//Establecemos conexion con el servidor
+            //Flujos de entrada y salida
+            DataOutputStream dos = new DataOutputStream(cl.getOutputStream());
+            DataInputStream dis = new DataInputStream(new FileInputStream(file));
+            //Enviamos el nombre y tamaño del archivo
+            dos.writeUTF(filename);
+            dos.flush();
+            dos.writeLong(tam);
+            dos.flush();
+            //Enviamos los datos obtenidos del archivo el bloques de 1024 bits
+            byte[] b = new byte[1024];
+            long enviados = 0;
+            int porcentaje, n;
+            while(enviados<tam){
+                n = dis.read(b);
+                dos.write(b,0,n);
+                dos.flush();
+                enviados=enviados+n;
+                porcentaje=(int)(enviados*100/tam);
+                System.out.print("Enviado:"+porcentaje+"%\r");
+            }//While
+            System.out.print("\n\nArchivo enviado al servidor");
+            dos.close();//Cerramos flujo de salida
+            dis.close();//Cerramos flujo de entrada
+
+        } catch (Exception e) {
+            System.out.println("Error al conectar con el servidor o al enviar el archivo: " + e.getMessage());
+        }
     }
 
 
