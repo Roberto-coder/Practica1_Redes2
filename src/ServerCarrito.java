@@ -24,6 +24,9 @@ public class ServerCarrito {
 
                 enviarArchivo(cl,"src/Servidor/catalogo.txt");
                 //enviarImagenes(cl,IMAGE_FOLDER_PATH );
+
+                //Recibir respuesta del servidor
+                recibirArchivo(cl);
             }
         } catch (Exception e) {
             e.printStackTrace();//cachamos la posible excepcion

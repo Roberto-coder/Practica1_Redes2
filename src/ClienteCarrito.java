@@ -17,7 +17,7 @@ public class ClienteCarrito {
             String folder = "src/Cliente/imagenes/";
             recibirArchivo(cl);
             //recibirImagenes(cl,folder);
-            menu();
+            menu(cl);
 
             //catalogo.listaProductos.add();
 
@@ -27,7 +27,7 @@ public class ClienteCarrito {
 
     }
 
-    public static void menu() {
+    public static void menu(Socket cl) {
         Scanner scanner = new Scanner(System.in);
         int opcion;
         mostrarProductos();
@@ -63,10 +63,16 @@ public class ClienteCarrito {
                     carrito.mostrarCarrito();
                     break;    
                 case 10:
-                    System.out.println("Saliendo del programa...");
-                    scanner.close();
-                    //Cierra el socket
-                    //cl.close();
+                    try {
+                        System.out.println("Saliendo del programa...");
+                        scanner.close();
+                        //Reggresa archivo al servidor
+                        enviarArchivo(cl,"src/Cliente/imagenes");
+                        //Cierra el socket
+                        cl.close();
+                    }catch (Exception e){
+                        System.out.println("Error:" + e);
+                    }
                     break;
                 default:
                     System.out.println("Opción no válida. Por favor ingresa una opción entre 1 y 6.");
@@ -85,6 +91,8 @@ public class ClienteCarrito {
         Producto producto = buscarProducto(nProducto);
         if (producto == null) {
             System.out.println("Producto no encontrado");
+        }else if(producto.stock<cProducto){
+            System.out.println("Cantidad de productos seleccionados mayor a la existente");
         }else{
             carrito.agregarProducto(producto, cProducto);
             System.out.println(producto);
@@ -136,27 +144,32 @@ public class ClienteCarrito {
     }
 
     public static void editarProducto() {
-        System.out.println("Editando producto...");
-        // Código para editar un producto
+        Scanner s = new Scanner(System.in);
+        System.out.println("Ingrese el nombre del producto a eliminar");
+        String nProducto = s.nextLine();
+        System.out.println("Ingrese la nueva cantidad del producto:");
+        int cProducto = s.nextInt();
+
+        carrito.editarProducto(nProducto,cProducto);
     }
 
     public static void comprarProducto() {
-        /*for (DetalleCarrito objetos:carrito.detalleCarritos) {
-            if(catalogo.contains(objetos.getProducto())){
-                System.out.println(objetos.getProducto().nombre);
-                catalogo
-            }
-        }*/
-        for (int i = 0; i < catalogo.size(); i++) {
-            for (int j = 0; j < carrito.detalleCarritos.size(); j++) {
-                if(catalogo.get(i).equals(carrito.detalleCarritos.get(j).getProducto())){
-                    System.out.println(catalogo.get(i).getNombre());
-                    catalogo.get(i).actualizarStock(carrito.detalleCarritos.get(j).getCantidad());
+
+        if (carrito.detalleCarritos.size()>0){
+            for (int i = 0; i < catalogo.size(); i++) {
+                for (int j = 0; j < carrito.detalleCarritos.size(); j++) {
+                    if(catalogo.get(i).equals(carrito.detalleCarritos.get(j).getProducto())){
+                        System.out.println(catalogo.get(i).getNombre());
+                        catalogo.get(i).actualizarStock(carrito.detalleCarritos.get(j).getCantidad());
+                    }
                 }
             }
+            actualizarCatalogo();
+            carrito.limpiarCarrito();
+        }else {
+            System.out.println("Primero agrega articulos al carrito");
         }
-        actualizarCatalogo();
-        carrito.limpiarCarrito();
+
 
     }
 

@@ -44,4 +44,20 @@ public class Carrito {
             System.out.println("Producto no encontrado");
         }
     }
+
+    public void editarProducto(String nombre, int nCantidad){
+        boolean verificador=false;
+        for (int i = 0; i < detalleCarritos.size(); i++) {
+            if (nombre.equals(detalleCarritos.get(i).getProducto().getNombre())){
+                detalleCarritos.get(i).setCantidad(nCantidad);
+                verificador=true;
+            }
+        }
+        if (verificador){
+            System.out.println("Producto:"+nombre+" editado correctamente");
+        }else {
+            System.out.println("Producto no encontrado");
+        }
+    }
+
 }
