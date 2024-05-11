@@ -14,9 +14,8 @@ public class ClienteCarrito {
             System.out.print("\n\nEscriba el puerto: ");
             int pto=Integer.parseInt(br.readLine());
             Socket cl = new Socket(host,pto);
-            String folder = "src/Cliente/imagenes/";
-            recibirArchivo(cl);
-            //recibirImagenes(cl,folder);
+            String folder = "src/Cliente";
+            recibirDatos(cl,folder);
             menu(cl);
 
             //catalogo.listaProductos.add();
@@ -66,8 +65,8 @@ public class ClienteCarrito {
                     try {
                         System.out.println("Saliendo del programa...");
                         scanner.close();
-                        //Reggresa archivo al servidor
-                        enviarArchivo(cl,"src/Cliente/imagenes");
+                        //Regresa archivo al servidor
+                        enviarArchivo(cl,"src/Cliente/catalogo.txt");
                         //Cierra el socket
                         cl.close();
                     }catch (Exception e){
@@ -140,7 +139,6 @@ public class ClienteCarrito {
 
         carrito.borrarProducto(nProducto);
 
-
     }
 
     public static void editarProducto() {
@@ -155,12 +153,12 @@ public class ClienteCarrito {
 
     public static void comprarProducto() {
 
-        if (carrito.detalleCarritos.size()>0){
-            for (int i = 0; i < catalogo.size(); i++) {
+        if (!carrito.detalleCarritos.isEmpty()){
+            for (Producto producto : catalogo) {
                 for (int j = 0; j < carrito.detalleCarritos.size(); j++) {
-                    if(catalogo.get(i).equals(carrito.detalleCarritos.get(j).getProducto())){
-                        System.out.println(catalogo.get(i).getNombre());
-                        catalogo.get(i).actualizarStock(carrito.detalleCarritos.get(j).getCantidad());
+                    if (producto.equals(carrito.detalleCarritos.get(j).getProducto())) {
+                        System.out.println(producto.getNombre());
+                        producto.actualizarStock(carrito.detalleCarritos.get(j).getCantidad());
                     }
                 }
             }
@@ -173,89 +171,6 @@ public class ClienteCarrito {
 
     }
 
-    public static String recibirArchivo(Socket cl) {
-        String nombre="";//Nombre del archivo
-        try {
-            //Definimos flujo de entrada orientado a bits ligado al socket
-            DataInputStream dis=new DataInputStream(cl.getInputStream());
-
-            //Definimos flujo de entrada orientado a bits ligado al socket
-            //Leemos los datos del archivo recibido en bloques de 1024
-            byte[] b = new byte[1024];
-            nombre = dis.readUTF();
-            System.out.print("\nRecibimos el archivo: "+nombre);
-            long tam = dis.readLong();
-
-            //Creamos flujo para escribir el archivo de salida
-            BufferedOutputStream dos=new BufferedOutputStream(new FileOutputStream("src/Cliente/catalogo.txt"));
-            //Preparamos los datos para recibir los
-            long recibidos=0;
-            int n,porcentaje;
-            //Definimos un ciclo donde estaremos recibiendo
-            while(recibidos<tam){
-                n = dis.read(b, 0, Math.min(b.length, (int)(tam - recibidos)));
-                if (n == -1) break; // Si llegamos al final del archivo
-                dos.write(b, 0, n);
-                dos.flush();
-                recibidos += n;
-                porcentaje = (int) ((recibidos * 100) / tam);
-                System.out.println("\nDescarga del catalogo: " + porcentaje + "%");
-            }//While
-            //Cerramos los flujos de entrada y salida, asi como el socket
-            dos.close();
-            dis.close();
-        }catch (Exception e){
-            System.out.println("Error: "+ e);
-        }
-        return nombre;
-    }
-
-    private static void recibirImagenes(Socket socket, String folder) {
-        try {
-            DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
-
-            // Recibimos la cantidad total de imágenes
-            int totalImages = dataInputStream.readInt();
-            System.out.println("Número total de imágenes a recibir: " + totalImages);
-
-            // Creamos la carpeta de guardado si no existe
-            File saveFolder = new File(folder);
-            if (!saveFolder.exists()) {
-                saveFolder.mkdirs();
-                System.out.println("Carpeta de guardado creada en: " + folder);
-            }
-
-            for (int i = 0; i < totalImages; i++) {
-                String fileName = dataInputStream.readUTF();
-                long fileSize = dataInputStream.readLong();
-                System.out.println("Recibiendo archivo: " + fileName + ", Tamaño: " + fileSize + " bytes");
-
-                // Creamos un flujo para escribir el archivo recibido en la carpeta de guardado
-                BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(new File(saveFolder, fileName)));
-
-                // Definimos un buffer para leer los datos del archivo en bloques de 1024 bytes
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                long totalBytesRead = 0;
-
-                // Leemos los datos del archivo y los escribimos en el archivo local
-                while (totalBytesRead < fileSize && (bytesRead = dataInputStream.read(buffer, 0, (int) Math.min(buffer.length, fileSize - totalBytesRead))) != -1) {
-                    bufferedOutputStream.write(buffer, 0, bytesRead);
-                    bufferedOutputStream.flush();
-                    totalBytesRead += bytesRead;
-                }
-
-                // Cerramos el flujo para escribir el archivo
-                bufferedOutputStream.close();
-
-                System.out.println("Archivo recibido y guardado en: " + saveFolder.getAbsolutePath());
-            }
-
-            dataInputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
     public static Producto buscarProducto(String nProducto){
         Producto pBuscado = null;
         for (Producto producto : catalogo) {
@@ -298,6 +213,63 @@ public class ClienteCarrito {
 
         } catch (Exception e) {
             System.out.println("Error al conectar con el servidor o al enviar el archivo: " + e.getMessage());
+        }
+    }
+
+    private static void recibirDatos(Socket cl, String folder) {
+        try {
+            DataInputStream dis = new DataInputStream(cl.getInputStream());
+
+            // Recibe el archivo
+            String fileName = dis.readUTF();
+            long fileSize = dis.readLong();
+
+            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(folder, fileName)))) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                for (long bytesToRead = fileSize; bytesToRead > 0; ) {
+                    int bytesToReadThisIteration = (int) Math.min(buffer.length, bytesToRead);
+                    bytesRead = dis.read(buffer, 0, bytesToReadThisIteration);
+                    if (bytesRead == -1) {
+                        throw new EOFException("Fin de archivo inesperado al recibir el archivo: " + fileName);
+                    }
+                    bos.write(buffer, 0, bytesRead);
+                    bytesToRead -= bytesRead;
+                }
+            }
+
+            System.out.println("Archivo recibido y guardado en: " + folder);
+
+            // Recibe las imágenes
+            int numImages = dis.readInt();
+            System.out.println("Número total de imágenes a recibir: " + numImages);
+
+            for (int i = 0; i < numImages; i++) {
+                String imageFileName = dis.readUTF();
+                long imageFileSize = dis.readLong();
+                System.out.println("Recibiendo imagen: " + imageFileName + ", Tamaño: " + imageFileSize + " bytes");
+
+                try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(folder, imageFileName)))) {
+                    byte[] imageBuffer = new byte[1024];
+                    int totalBytesRead = 0;
+                    for (long bytesToRead = imageFileSize; bytesToRead > 0; ) {
+                        int bytesToReadThisIteration = (int) Math.min(imageBuffer.length, bytesToRead);
+                        int bytesRead = dis.read(imageBuffer, 0, bytesToReadThisIteration);
+                        if (bytesRead == -1) {
+                            throw new EOFException("Fin de archivo inesperado al recibir la imagen: " + imageFileName);
+                        }
+                        bos.write(imageBuffer, 0, bytesRead);
+                        totalBytesRead += bytesRead;
+                        bytesToRead -= bytesRead;
+                    }
+                }
+
+                System.out.println("Imagen recibida y guardada en: " + folder);
+            }
+
+            dis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
