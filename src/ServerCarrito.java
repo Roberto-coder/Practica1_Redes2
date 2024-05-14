@@ -20,11 +20,18 @@ public class ServerCarrito {
             for ( ; ; ) {
                 //Acepta la conexion del cliente
                 Socket cl = s.accept();
+                DataOutputStream dos = new DataOutputStream(cl.getOutputStream());
+                DataInputStream dis = new DataInputStream(cl.getInputStream());
                 System.out.print("Conexión establecida desde "+cl.getInetAddress()+":"+cl.getPort());
 
-                enviarDatos(cl,folder,archivo);
+                enviarDatos(cl, folder, archivo, dos);
 
-                //recibirArchivo(cl);
+                if(cl.isClosed()){
+                    System.out.println("socket cerrado");
+                }
+                recibirArchivo(cl, dis);
+                dis.close();
+                dos.close();
             }
         } catch (Exception e) {
             e.printStackTrace();//cachamos la posible excepcion
@@ -46,7 +53,7 @@ public class ServerCarrito {
             out.writeObject(productos);
             out.close();
             fileOut.close();
-            System.out.println("Datos serializados guardados en catalogo.txt");
+            System.out.println("Catalogo creado");
 
             // Deserializando el ArrayList
             FileInputStream fileIn = new FileInputStream("src/Servidor/catalogo.txt");
@@ -54,8 +61,6 @@ public class ServerCarrito {
             ArrayList<String> listDeserialized = (ArrayList<String>) in.readObject();
             in.close();
             fileIn.close();
-
-            System.out.println("ArrayList deserializado: " + listDeserialized);
         } catch (Exception i) {
             System.out.println(i);
         }
@@ -63,10 +68,8 @@ public class ServerCarrito {
 
     }
 
-    private static void enviarDatos(Socket cl, String folder, String archivo) {
-        DataOutputStream dos=null;
+    private static void enviarDatos(Socket cl, String folder, String archivo, DataOutputStream dos) {
         try {
-           dos = new DataOutputStream(cl.getOutputStream());
 
             // Envía el archivo
             File file = new File(archivo);
@@ -114,19 +117,18 @@ public class ServerCarrito {
                 dos.writeInt(0); // Envía 0 si no hay imágenes
             }
 
-            System.out.println("Datos enviados al servidor");
-            dos.close();
+            System.out.println("\nDatos enviados al cliente");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static String recibirArchivo(Socket cl) {
+    public static String recibirArchivo(Socket cl, DataInputStream dis) {
         String nombre="";//Nombre del archivo
-        BufferedOutputStream dos=null;
+        BufferedOutputStream dos = null;
             try {
                 //Definimos flujo de entrada orientado a bits ligado al socket
-                DataInputStream dis=new DataInputStream(cl.getInputStream());
+
                 String command = dis.readUTF();
                 if ("SEND_FILE".equals(command)) {
                     //Leemos los datos del archivo recibido en bloques de 1024
@@ -136,7 +138,7 @@ public class ServerCarrito {
                     long tam = dis.readLong();
 
                     //Creamos flujo para escribir el archivo de salida
-                    dos=new BufferedOutputStream(new FileOutputStream("src/Cliente/catalogo.txt"));
+                    dos=new BufferedOutputStream(new FileOutputStream("src/Servidor/catalogo.txt"));
                     //Preparamos los datos para recibir los
                     long recibidos=0;
                     int n,porcentaje;
@@ -148,8 +150,10 @@ public class ServerCarrito {
                         dos.flush();
                         recibidos += n;
                         porcentaje = (int) ((recibidos * 100) / tam);
-                        System.out.println("\nDescarga del catalogo: " + porcentaje + "%");
+                        System.out.println("\nDescarga del catalogo actualizado: " + porcentaje + "%");
+                        System.out.println("Catalogo actualizado");
                     }//While
+                    mostrarProductos();
                     //Cerramos los flujos de entrada y salida, asi como el socket
                     dos.close();
                     dis.close();
@@ -163,5 +167,23 @@ public class ServerCarrito {
 
         return nombre;
     }
+    public static void mostrarProductos() {
+        System.out.println("Mostrando productos...");
+        try{
+            ArrayList<Producto> catalogo;
+            //Deserializar
+            FileInputStream fileIn = new FileInputStream("src/Servidor/catalogo.txt");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            catalogo = (ArrayList<Producto>) in.readObject();
+            in.close();
+            fileIn.close();
 
+            System.out.println("El catalogo es el siguiente: ");
+            for (Producto producto: catalogo) {
+                producto.imprimirDatos();
+            }
+        }catch(Exception e){
+            System.out.println("Error al mostrar productos: "+e);
+        }
+    }
 }

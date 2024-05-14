@@ -15,7 +15,9 @@ public class ClienteCarrito {
             int pto=Integer.parseInt(br.readLine());
             Socket cl = new Socket(host,pto);
             String folder = "src/Cliente";
-            recibirDatos(cl,folder);
+            DataInputStream dis = new DataInputStream(cl.getInputStream());
+            recibirDatos(cl, folder, dis);
+            
             System.out.println("El socket esta cerrado? "+cl.isClosed());
             menu(cl);
 
@@ -65,9 +67,8 @@ public class ClienteCarrito {
                 case 10:
                     try {
                         System.out.println("Saliendo del programa...");
-                        scanner.close();
                         //Regresa archivo al servidor
-                        //enviarArchivo(cl,"src/Cliente/catalogo.txt");
+                        enviarArchivo(cl,"src/Cliente/catalogo.txt");
                         //Cierra el socket
                         cl.close();
                     }catch (Exception e){
@@ -171,7 +172,7 @@ public class ClienteCarrito {
             }
             actualizarCatalogo();
             carrito.limpiarCarrito();
-            carrito.generarTicket();
+            //carrito.generarTicket();
         }else {
             System.out.println("Primero agrega articulos al carrito");
         }
@@ -227,10 +228,8 @@ public class ClienteCarrito {
         }
     }
 
-    private static void recibirDatos(Socket cl, String folder) {
+    private static void recibirDatos(Socket cl, String folder, DataInputStream dis) {
         try {
-            DataInputStream dis = new DataInputStream(cl.getInputStream());
-
             // Recibe el archivo
             String fileName = dis.readUTF();
             long fileSize = dis.readLong();
@@ -278,7 +277,6 @@ public class ClienteCarrito {
                 System.out.println("Imagen recibida y guardada en: " + folder);
             }
 
-            dis.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
