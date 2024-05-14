@@ -24,9 +24,7 @@ public class ServerCarrito {
 
                 enviarDatos(cl,folder,archivo);
 
-                //Recibir respuesta del cliente
-                System.out.println("Se ha recibido correctamente el nuevo catalogo"+recibirArchivo(cl));
-                cl.close();
+                //recibirArchivo(cl);
             }
         } catch (Exception e) {
             e.printStackTrace();//cachamos la posible excepcion
@@ -117,64 +115,52 @@ public class ServerCarrito {
             }
 
             System.out.println("Datos enviados al servidor");
-
             dos.close();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (dos != null) {
-                    dos.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
     public static String recibirArchivo(Socket cl) {
         String nombre="";//Nombre del archivo
         BufferedOutputStream dos=null;
-        try {
-            //Definimos flujo de entrada orientado a bits ligado al socket
-            DataInputStream dis=new DataInputStream(cl.getInputStream());
-
-            //Definimos flujo de entrada orientado a bits ligado al socket
-            //Leemos los datos del archivo recibido en bloques de 1024
-            byte[] b = new byte[1024];
-            nombre = dis.readUTF();
-            System.out.print("\nRecibimos el archivo: "+nombre);
-            long tam = dis.readLong();
-
-            //Creamos flujo para escribir el archivo de salida
-            dos=new BufferedOutputStream(new FileOutputStream("src/Cliente/catalogo.txt"));
-            //Preparamos los datos para recibir los
-            long recibidos=0;
-            int n,porcentaje;
-            //Definimos un ciclo donde estaremos recibiendo
-            while(recibidos<tam){
-                n = dis.read(b, 0, Math.min(b.length, (int)(tam - recibidos)));
-                if (n == -1) break; // Si llegamos al final del archivo
-                dos.write(b, 0, n);
-                dos.flush();
-                recibidos += n;
-                porcentaje = (int) ((recibidos * 100) / tam);
-                System.out.println("\nDescarga del catalogo: " + porcentaje + "%");
-            }//While
-            //Cerramos los flujos de entrada y salida, asi como el socket
-            dos.close();
-            dis.close();
-        }catch (Exception e){
-            System.out.println("Error: "+ e);
-        } finally {
             try {
-                if (dos != null) {
+                //Definimos flujo de entrada orientado a bits ligado al socket
+                DataInputStream dis=new DataInputStream(cl.getInputStream());
+                String command = dis.readUTF();
+                if ("SEND_FILE".equals(command)) {
+                    //Leemos los datos del archivo recibido en bloques de 1024
+                    byte[] b = new byte[1024];
+                    nombre = dis.readUTF();
+                    System.out.print("\nRecibimos el archivo: "+nombre);
+                    long tam = dis.readLong();
+
+                    //Creamos flujo para escribir el archivo de salida
+                    dos=new BufferedOutputStream(new FileOutputStream("src/Cliente/catalogo.txt"));
+                    //Preparamos los datos para recibir los
+                    long recibidos=0;
+                    int n,porcentaje;
+                    //Definimos un ciclo donde estaremos recibiendo
+                    while(recibidos<tam){
+                        n = dis.read(b, 0, Math.min(b.length, (int)(tam - recibidos)));
+                        if (n == -1) break; // Si llegamos al final del archivo
+                        dos.write(b, 0, n);
+                        dos.flush();
+                        recibidos += n;
+                        porcentaje = (int) ((recibidos * 100) / tam);
+                        System.out.println("\nDescarga del catalogo: " + porcentaje + "%");
+                    }//While
+                    //Cerramos los flujos de entrada y salida, asi como el socket
                     dos.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+                    dis.close();
+            }else {
+                System.out.println("El servidor no envio el catalogo");
             }
-        }
+            }catch (Exception e){
+                System.out.println("Error: "+ e);
+            }
+
+
         return nombre;
     }
 

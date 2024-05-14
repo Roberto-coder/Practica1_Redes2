@@ -16,6 +16,7 @@ public class ClienteCarrito {
             Socket cl = new Socket(host,pto);
             String folder = "src/Cliente";
             recibirDatos(cl,folder);
+            System.out.println("El socket esta cerrado? "+cl.isClosed());
             menu(cl);
 
             //catalogo.listaProductos.add();
@@ -66,7 +67,7 @@ public class ClienteCarrito {
                         System.out.println("Saliendo del programa...");
                         scanner.close();
                         //Regresa archivo al servidor
-                        enviarArchivo(cl,"src/Cliente/catalogo.txt");
+                        //enviarArchivo(cl,"src/Cliente/catalogo.txt");
                         //Cierra el socket
                         cl.close();
                     }catch (Exception e){
@@ -82,20 +83,26 @@ public class ClienteCarrito {
 
 
     private static void agregarProductoCarrito() {
-        Scanner s = new Scanner(System.in);
-        System.out.println("Ingrese el nombre del producto a agregar");
-        String nProducto = s.nextLine();
-        System.out.println("Ingrese la cantidad de unidades del producto a agregar");
-        int cProducto = s.nextInt();
-        Producto producto = buscarProducto(nProducto);
-        if (producto == null) {
-            System.out.println("Producto no encontrado");
-        }else if(producto.stock<cProducto){
-            System.out.println("Cantidad de productos seleccionados mayor a la existente");
-        }else{
-            carrito.agregarProducto(producto, cProducto);
-            System.out.println(producto);
-            System.out.println("Producto agregado correctamente");
+
+        try {
+            Scanner s = new Scanner(System.in);
+            System.out.println("Ingrese el nombre del producto a agregar");
+            String nProducto = s.nextLine();
+            System.out.println("Ingrese la cantidad de unidades del producto a agregar");
+            int cProducto = s.nextInt();
+            Producto producto = buscarProducto(nProducto);
+            if (producto == null) {
+                System.out.println("Producto no encontrado");
+            }else if(producto.stock<cProducto){
+                System.out.println("Cantidad de productos seleccionados mayor a la existente");
+            }else{
+                carrito.agregarProducto(producto, cProducto);
+                System.out.println(producto);
+                System.out.println("Producto agregado correctamente");
+            }
+        }catch (Exception e){
+            System.out.println("Ingrese una cantidad valida");
+            agregarProductoCarrito();
         }
     }
 
@@ -164,6 +171,7 @@ public class ClienteCarrito {
             }
             actualizarCatalogo();
             carrito.limpiarCarrito();
+            carrito.generarTicket();
         }else {
             System.out.println("Primero agrega articulos al carrito");
         }
@@ -190,6 +198,9 @@ public class ClienteCarrito {
             //Flujos de entrada y salida
             DataOutputStream dos = new DataOutputStream(cl.getOutputStream());
             DataInputStream dis = new DataInputStream(new FileInputStream(file));
+            //Enviamos un mensaje de aceptacion al servidor
+            dos.writeUTF("SEND_FILE"); // Enviar comando al servidor
+            dos.flush();
             //Enviamos el nombre y tamaño del archivo
             dos.writeUTF(filename);
             dos.flush();

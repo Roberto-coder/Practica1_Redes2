@@ -7,7 +7,9 @@ public class DetalleCarrito {
         this.cantidad = cantidad;
         this.subtotal = producto.precio * cantidad;
     }
-
+    public void actualizarSubtotal(){
+        this.subtotal=producto.precio * cantidad;
+    }
     public Producto getProducto() {
         return producto;
     }

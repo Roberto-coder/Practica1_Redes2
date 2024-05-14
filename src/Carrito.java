@@ -1,4 +1,11 @@
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+
 
 public class Carrito {
     ArrayList<DetalleCarrito> detalleCarritos = new ArrayList<>();
@@ -50,9 +57,11 @@ public class Carrito {
         for (int i = 0; i < detalleCarritos.size(); i++) {
             if (nombre.equals(detalleCarritos.get(i).getProducto().getNombre())){
                 detalleCarritos.get(i).setCantidad(nCantidad);
+                detalleCarritos.get(i).actualizarSubtotal();
                 verificador=true;
             }
         }
+
         if (verificador){
             System.out.println("Producto:"+nombre+" editado correctamente");
         }else {
@@ -60,4 +69,29 @@ public class Carrito {
         }
     }
 
+    public void generarTicket() {
+        try {
+            String path = "example.pdf"; // Cambia la ruta según necesites
+
+            // Crear un objeto PdfWriter
+            PdfWriter writer = new PdfWriter(path);
+
+            // Crear un objeto PdfDocument
+            PdfDocument pdf = new PdfDocument(writer);
+
+            // Crear un objeto Document
+            Document document = new Document(pdf);
+
+            // Añadir un párrafo
+            document.add(new Paragraph("¡Hola, mundo! Este es un documento PDF creado usando iText 7."));
+
+            // Cerrar el documento
+            document.close();
+
+            System.out.println("PDF creado exitosamente: " + path);
+
+        }catch (Exception e){
+            System.out.println(e);
+        }
+    }
 }
