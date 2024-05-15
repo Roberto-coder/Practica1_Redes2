@@ -171,8 +171,8 @@ public class ClienteCarrito {
                 }
             }
             actualizarCatalogo();
+            carrito.generarTicket();
             carrito.limpiarCarrito();
-            //carrito.generarTicket();
         }else {
             System.out.println("Primero agrega articulos al carrito");
         }

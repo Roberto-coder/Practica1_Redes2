@@ -71,7 +71,7 @@ public class Carrito {
 
     public void generarTicket() {
         try {
-            String path = "example.pdf"; // Cambia la ruta según necesites
+            String path = "src/Cliente/example.pdf";
 
             // Crear un objeto PdfWriter
             PdfWriter writer = new PdfWriter(path);
@@ -83,7 +83,23 @@ public class Carrito {
             Document document = new Document(pdf);
 
             // Añadir un párrafo
-            document.add(new Paragraph("¡Hola, mundo! Este es un documento PDF creado usando iText 7."));
+            document.add(new Paragraph("¡Hola, Gracias por tu compra! Este es tu ticket correspondiente a los articulos:"));
+
+            //Añadir articulos
+            String articulo="";
+            for (DetalleCarrito detalleCarrito : detalleCarritos) {
+                articulo= "\n-------------------------------------------------------------------"
+                        +"\nNombre: " + detalleCarrito.producto.getNombre()
+                        +"\nCantidad: " + detalleCarrito.cantidad
+                        +"\nPrecio: $" + detalleCarrito.producto.getPrecio()
+                        +"\nSubtotal: $" + detalleCarrito.subtotal
+                        +"\n-------------------------------------------------------------------";
+                total += detalleCarrito.subtotal;
+                document.add(new Paragraph(articulo));
+            }
+            document.add(new Paragraph("\n-------------------------------------------------------------------"+
+                    "\nTotal: $" + total));
+
 
             // Cerrar el documento
             document.close();
