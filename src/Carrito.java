@@ -1,6 +1,9 @@
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Random;
+
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
@@ -70,9 +73,22 @@ public class Carrito {
     }
 
     public void generarTicket() {
-        try {
-            String path = "src/Cliente/example.pdf";
+        Random random = new Random();
+        String path;
+        File file;
 
+        do {
+            // Generar un número aleatorio entre 1 y 100
+            int randomNumber = random.nextInt(100) + 1;
+
+            // Construir la ruta del archivo PDF
+            path = "src/Cliente/ticket" + randomNumber + ".pdf";
+            file = new File(path);
+
+            // Si el archivo ya existe, el bucle se repite; si no, se sale del bucle
+        } while (file.exists());
+
+        try {
             // Crear un objeto PdfWriter
             PdfWriter writer = new PdfWriter(path);
 
