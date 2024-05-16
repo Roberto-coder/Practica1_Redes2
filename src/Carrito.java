@@ -14,7 +14,7 @@ public class Carrito {
     ArrayList<DetalleCarrito> detalleCarritos = new ArrayList<>();
     int total;
     public void agregarProducto(Producto producto, int cantidad) {
-        detalleCarritos.add(new DetalleCarrito(producto, cantidad));
+            detalleCarritos.add(new DetalleCarrito(producto, cantidad));
     }
     public void mostrarCarrito(){
         if (detalleCarritos.size() == 0){
@@ -70,6 +70,16 @@ public class Carrito {
         }else {
             System.out.println("Producto no encontrado");
         }
+    }
+
+    public boolean buscarProducto(String nombre){
+        boolean verificador=false;
+        for (int i = 0; i < detalleCarritos.size(); i++) {
+            if (nombre.equals(detalleCarritos.get(i).getProducto().getNombre())){
+                verificador=true;
+            }
+        }
+        return verificador;
     }
 
     public void generarTicket() {

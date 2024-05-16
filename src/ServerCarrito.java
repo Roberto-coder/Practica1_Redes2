@@ -9,8 +9,7 @@ public class ServerCarrito {
     static String folder = "src/Servidor/imagenes/";
     static String archivo = "src/Servidor/catalogo.txt";
     public static void main(String[] args) {//Metodo main
-
-        crearCatalogo();
+        //crearCatalogo();
 
         try {//Iniciamos proceso de recepcion de archivo serializado
             int port=6030;
@@ -26,7 +25,7 @@ public class ServerCarrito {
                 DataInputStream dis = new DataInputStream(cl.getInputStream());
                 System.out.print("Conexión establecida desde "+cl.getInetAddress()+":"+cl.getPort());
 
-                enviarDatos(cl, folder, archivo, dos);
+                enviarDatos(folder, archivo, dos);
 
                 if(cl.isClosed()){
                     System.out.println("socket cerrado");
@@ -44,13 +43,13 @@ public class ServerCarrito {
 
 
     private static void crearCatalogo() {
-        productos.add(new Producto("Lethal Company",3,5));
-        productos.add(new Producto("Ark",4,7));
-        productos.add(new Producto("Fallout",8,6));
+        productos.add(new Producto("Lethal Company",20,5));
+        productos.add(new Producto("Ark",40,7));
+        productos.add(new Producto("Fallout",80,6));
 
         try {
             // Serializando el ArrayList
-            FileOutputStream fileOut = new FileOutputStream("src/Servidor/catalogo.txt");
+            FileOutputStream fileOut = new FileOutputStream(archivo);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(productos);
             out.close();
@@ -64,7 +63,7 @@ public class ServerCarrito {
 
     }
 
-    private static void enviarDatos(Socket cl, String folder, String archivo, DataOutputStream dos) {
+    private static void enviarDatos(String folder, String archivo, DataOutputStream dos) {
         try {
 
             // Envía el archivo
@@ -169,7 +168,7 @@ public class ServerCarrito {
         try{
             ArrayList<Producto> catalogo;
             //Deserializar
-            FileInputStream fileIn = new FileInputStream("src/Servidor/catalogo.txt");
+            FileInputStream fileIn = new FileInputStream(archivo);
             ObjectInputStream in = new ObjectInputStream(fileIn);
             catalogo = (ArrayList<Producto>) in.readObject();
             in.close();

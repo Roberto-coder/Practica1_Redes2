@@ -84,7 +84,6 @@ public class ClienteCarrito {
 
 
     private static void agregarProductoCarrito() {
-
         try {
             Scanner s = new Scanner(System.in);
             System.out.println("Ingrese el nombre del producto a agregar");
@@ -96,7 +95,9 @@ public class ClienteCarrito {
                 System.out.println("Producto no encontrado");
             }else if(producto.stock<cProducto){
                 System.out.println("Cantidad de productos seleccionados mayor a la existente");
-            }else{
+            } else if (carrito.buscarProducto(producto.getNombre())) {
+                System.out.println("El producto ya estaba en el carrito, porfavor editalo");
+            } else{
                 carrito.agregarProducto(producto, cProducto);
                 System.out.println(producto);
                 System.out.println("Producto agregado correctamente");
@@ -150,13 +151,22 @@ public class ClienteCarrito {
     }
 
     public static void editarProducto() {
-        Scanner s = new Scanner(System.in);
-        System.out.println("Ingrese el nombre del producto a eliminar");
-        String nProducto = s.nextLine();
-        System.out.println("Ingrese la nueva cantidad del producto:");
-        int cProducto = s.nextInt();
-
-        carrito.editarProducto(nProducto,cProducto);
+        try {
+            Scanner s = new Scanner(System.in);
+            System.out.println("Ingrese el nombre del producto a editar");
+            String nProducto = s.nextLine();
+            System.out.println("Ingrese la nueva cantidad del producto:");
+            int cProducto = s.nextInt();
+            Producto producto = buscarProducto(nProducto);//buscar en el catalogo
+            if (producto.stock < cProducto) {
+                System.out.println("Cantidad de productos seleccionados mayor a la existente");
+            } else {
+                carrito.editarProducto(nProducto, cProducto);
+            }
+        }catch (Exception e){
+            System.out.println("Ingrese una cantidad valida");
+            editarProducto();
+        }
     }
 
     public static void comprarProducto() {
