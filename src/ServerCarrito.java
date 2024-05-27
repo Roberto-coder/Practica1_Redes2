@@ -13,7 +13,7 @@ public class ServerCarrito {
 
         try {//Iniciamos proceso de recepcion de archivo serializado
             int port=6030;
-            InetAddress address = InetAddress.getByName("192.168.1.91");
+            InetAddress address = InetAddress.getByName("192.168.137.1");
             ServerSocket s = new ServerSocket(port, 50, address);
             //ServerSocket s = new ServerSocket(port);//Socket en el puerto 6030
             System.out.println("Servidor iniciado en " + address.getHostAddress() + ":" + port);
