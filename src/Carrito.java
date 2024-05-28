@@ -3,11 +3,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Random;
-
+/*
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Paragraph;*/
 
 
 public class Carrito {
@@ -81,7 +81,7 @@ public class Carrito {
         }
         return verificador;
     }
-
+/*
     public void generarTicket() {
         Random random = new Random();
         String path;
@@ -135,5 +135,5 @@ public class Carrito {
         }catch (Exception e){
             System.out.println(e);
         }
-    }
+    }*/
 }
