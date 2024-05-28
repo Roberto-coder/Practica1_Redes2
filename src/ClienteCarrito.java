@@ -6,6 +6,7 @@ import java.util.Scanner;
 public class ClienteCarrito {
     static ArrayList<Producto> catalogo;
     static Carrito carrito = new Carrito();
+    static String folder = "Cliente/";
     public static void main(String[] args) {
         try{
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -14,7 +15,6 @@ public class ClienteCarrito {
             System.out.print("\n\nEscriba el puerto: ");
             int pto=Integer.parseInt(br.readLine());
             Socket cl = new Socket(host,pto);
-            String folder = "src/Cliente";
             DataInputStream dis = new DataInputStream(cl.getInputStream());
             recibirDatos(cl, folder, dis);
             
@@ -68,7 +68,7 @@ public class ClienteCarrito {
                     try {
                         System.out.println("Saliendo del programa...");
                         //Regresa archivo al servidor
-                        enviarArchivo(cl,"src/Cliente/catalogo.txt");
+                        enviarArchivo(cl,folder+"catalogo.txt");
                         //Cierra el socket
                         cl.close();
                     }catch (Exception e){
@@ -112,7 +112,7 @@ public class ClienteCarrito {
         System.out.println("Mostrando productos...");
         try{
             //Deserializar
-            FileInputStream fileIn = new FileInputStream("src/Cliente/catalogo.txt");
+            FileInputStream fileIn = new FileInputStream(folder +"catalogo.txt");
             ObjectInputStream in = new ObjectInputStream(fileIn);
             catalogo = (ArrayList<Producto>) in.readObject();
             in.close();
