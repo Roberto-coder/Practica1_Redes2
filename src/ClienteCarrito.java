@@ -68,7 +68,7 @@ public class ClienteCarrito {
                     try {
                         System.out.println("Saliendo del programa...");
                         //Regresa archivo al servidor
-                        enviarArchivo(cl,folder+"catalogo.txt");
+                        enviarArchivo(cl,folder,"catalogo.txt");
                         //Cierra el socket
                         cl.close();
                     }catch (Exception e){
@@ -130,7 +130,7 @@ public class ClienteCarrito {
     private static void actualizarCatalogo() {
         try{
         // Serializando el ArrayList
-        FileOutputStream fileOut = new FileOutputStream("src/Cliente/catalogo.txt");
+        FileOutputStream fileOut = new FileOutputStream(folder+"catalogo.txt");
         ObjectOutputStream out = new ObjectOutputStream(fileOut);
         out.writeObject(catalogo);
         out.close();
@@ -201,8 +201,8 @@ public class ClienteCarrito {
         return pBuscado;
     }
 
-    public static void enviarArchivo(Socket cl, String filename) {
-        File file = new File(filename);
+    public static void enviarArchivo(Socket cl, String folder, String filename) {
+        File file = new File(folder+filename);
         long tam=file.length();
 
         try {//Establecemos conexion con el servidor
